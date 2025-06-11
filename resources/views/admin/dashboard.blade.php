@@ -17,6 +17,7 @@
             border-radius: 8px;
             margin: 2px 10px;
             transition: all 0.3s;
+            text-decoration: none;
         }
         .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
@@ -28,6 +29,7 @@
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: transform 0.3s;
+            cursor: pointer;
         }
         .stats-card:hover {
             transform: translateY(-5px);
@@ -57,6 +59,35 @@
             background: white;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+
+        .order-link {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .order-link:hover {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .clickable-row {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .clickable-row:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .product-link {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .product-link:hover {
+            color: #e67e22;
+        }
     </style>
 </head>
 <body>
@@ -75,19 +106,22 @@
                     <a class="nav-link active" href="{{ route('admin.dashboard') }}">
                         <i class="fas fa-chart-line me-2"></i> Dashboard
                     </a>
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{ route('admin.products.index') }}">
                         <i class="fas fa-apple-alt me-2"></i> Produits
                     </a>
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{ route('admin.categories.index') }}">
                         <i class="fas fa-tags me-2"></i> Catégories
                     </a>
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{ route('admin.orders.index') }}">
                         <i class="fas fa-shopping-cart me-2"></i> Commandes
                     </a>
-                    <a class="nav-link" href="#">
+                     <a class="nav-link" href="{{ route('admin.image-generation.index') }}">
+        <i class="fas fa-magic me-2"></i> Génération IA
+    </a>
+                    <a class="nav-link" href="{{ route('admin.customers.index') }}">
                         <i class="fas fa-users me-2"></i> Clients
                     </a>
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{ route('admin.reviews.index') }}">
                         <i class="fas fa-star me-2"></i> Avis
                     </a>
 
@@ -136,21 +170,23 @@
                     <!-- Stats Cards -->
                     <div class="row mb-4">
                         <div class="col-md-3 mb-3">
-                            <div class="card stats-card">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="stats-icon bg-primary-gradient me-3">
-                                        <i class="fas fa-shopping-cart"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-1">{{ $stats['total_orders'] ?? 0 }}</h5>
-                                        <p class="card-text text-muted">Commandes totales</p>
+                            <a href="{{ route('admin.orders.index') }}" class="text-decoration-none">
+                                <div class="card stats-card">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="stats-icon bg-primary-gradient me-3">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="card-title mb-1">{{ $stats['total_orders'] ?? 0 }}</h5>
+                                            <p class="card-text text-muted">Commandes totales</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <div class="card stats-card">
+                            <div class="card stats-card" onclick="window.location.href='{{ route('admin.orders.index') }}'">
                                 <div class="card-body d-flex align-items-center">
                                     <div class="stats-icon bg-success-gradient me-3">
                                         <i class="fas fa-euro-sign"></i>
@@ -164,31 +200,35 @@
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <div class="card stats-card">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="stats-icon bg-warning-gradient me-3">
-                                        <i class="fas fa-apple-alt"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-1">{{ $stats['active_products'] ?? 0 }}</h5>
-                                        <p class="card-text text-muted">Produits actifs</p>
+                            <a href="{{ route('admin.products.index') }}" class="text-decoration-none">
+                                <div class="card stats-card">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="stats-icon bg-warning-gradient me-3">
+                                            <i class="fas fa-apple-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="card-title mb-1">{{ $stats['active_products'] ?? 0 }}</h5>
+                                            <p class="card-text text-muted">Produits actifs</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <div class="card stats-card">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="stats-icon bg-danger-gradient me-3">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-1">{{ $stats['low_stock_products'] ?? 0 }}</h5>
-                                        <p class="card-text text-muted">Stock faible</p>
+                            <a href="{{ route('admin.products.index') }}?filter=low_stock" class="text-decoration-none">
+                                <div class="card stats-card">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="stats-icon bg-danger-gradient me-3">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="card-title mb-1">{{ $stats['low_stock_products'] ?? 0 }}</h5>
+                                            <p class="card-text text-muted">Stock faible</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     </div>
 
@@ -201,7 +241,12 @@
                                         <i class="fas fa-shopping-bag me-2"></i>
                                         Commandes récentes
                                     </h5>
-                                    <small class="text-muted">{{ $stats['pending_orders'] ?? 0 }} en attente</small>
+                                    <div class="d-flex gap-2">
+                                        <small class="text-muted">{{ $stats['pending_orders'] ?? 0 }} en attente</small>
+                                        <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-primary">
+                                            Voir toutes
+                                        </a>
+                                    </div>
                                 </div>
                                 <div class="card-body">
                                     @if(isset($recentOrders) && $recentOrders->count() > 0)
@@ -214,22 +259,29 @@
                                                         <th>Montant</th>
                                                         <th>Statut</th>
                                                         <th>Date</th>
+                                                        <th>Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     @foreach($recentOrders as $order)
-                                                        <tr>
+                                                        <tr class="clickable-row" onclick="window.location.href='{{ route('admin.orders.show', $order) }}'">
                                                             <td>
-                                                                <strong>{{ $order->order_number }}</strong>
+                                                                <a href="{{ route('admin.orders.show', $order) }}" class="order-link">
+                                                                    <strong>{{ $order->order_number }}</strong>
+                                                                </a>
                                                             </td>
-                                                            <td>{{ $order->user->name }}</td>
+                                                            <td>
+                                                                <a href="{{ route('admin.customers.show', $order->user) }}" class="text-decoration-none">
+                                                                    {{ $order->user->name }}
+                                                                </a>
+                                                            </td>
                                                             <td>{{ number_format($order->total_amount, 2, ',', ' ') }}€</td>
                                                             <td>
                                                                 @php
                                                                     $statusClasses = [
                                                                         'pending' => 'bg-warning',
                                                                         'confirmed' => 'bg-info',
-                                                                        'preparing' => 'bg-primary',
+                                                                        'processing' => 'bg-primary',
                                                                         'shipped' => 'bg-success',
                                                                         'delivered' => 'bg-success',
                                                                         'cancelled' => 'bg-danger'
@@ -237,7 +289,7 @@
                                                                     $statusLabels = [
                                                                         'pending' => 'En attente',
                                                                         'confirmed' => 'Confirmée',
-                                                                        'preparing' => 'Préparation',
+                                                                        'processing' => 'Préparation',
                                                                         'shipped' => 'Expédiée',
                                                                         'delivered' => 'Livrée',
                                                                         'cancelled' => 'Annulée'
@@ -248,6 +300,16 @@
                                                                 </span>
                                                             </td>
                                                             <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
+                                                            <td onclick="event.stopPropagation();">
+                                                                <div class="btn-group btn-group-sm">
+                                                                    <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-primary btn-sm" title="Voir">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </a>
+                                                                    <a href="{{ route('admin.orders.edit', $order) }}" class="btn btn-outline-warning btn-sm" title="Modifier">
+                                                                        <i class="fas fa-edit"></i>
+                                                                    </a>
+                                                                </div>
+                                                            </td>
                                                         </tr>
                                                     @endforeach
                                                 </tbody>
@@ -257,6 +319,9 @@
                                         <div class="text-center py-4">
                                             <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
                                             <p class="text-muted">Aucune commande récente</p>
+                                            <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-primary">
+                                                Voir toutes les commandes
+                                            </a>
                                         </div>
                                     @endif
                                 </div>
@@ -266,34 +331,76 @@
                         <!-- Produits en rupture -->
                         <div class="col-md-4">
                             <div class="card">
-                                <div class="card-header">
+                                <div class="card-header d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0">
                                         <i class="fas fa-exclamation-triangle text-warning me-2"></i>
                                         Stock faible
                                     </h5>
+                                    <a href="{{ route('admin.products.index') }}?filter=low_stock" class="btn btn-sm btn-outline-warning">
+                                        Voir tous
+                                    </a>
                                 </div>
                                 <div class="card-body">
                                     @if(isset($lowStockProducts) && $lowStockProducts->count() > 0)
                                         @foreach($lowStockProducts as $product)
-                                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
-                                                <div>
-                                                    <strong>{{ $product->name }}</strong>
-                                                    <br>
-                                                    <small class="text-muted">
-                                                        Stock: {{ $product->stock_quantity }} / Min: {{ $product->min_stock }}
-                                                    </small>
-                                                </div>
-                                                <span class="badge bg-{{ $product->stock_quantity == 0 ? 'danger' : 'warning' }}">
+                                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded position-relative">
+                                                <a href="{{ route('admin.products.show', $product) }}" class="product-link stretched-link text-decoration-none">
+                                                    <div>
+                                                        <strong>{{ $product->name }}</strong>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            Stock: {{ $product->stock_quantity }} / Min: {{ $product->min_stock ?? 5 }}
+                                                        </small>
+                                                    </div>
+                                                </a>
+                                                <span class="badge bg-{{ $product->stock_quantity == 0 ? 'danger' : 'warning' }} position-relative" style="z-index: 2;">
                                                     {{ $product->stock_quantity == 0 ? 'Rupture' : 'Faible' }}
                                                 </span>
                                             </div>
                                         @endforeach
+                                        <div class="text-center mt-3">
+                                            <a href="{{ route('admin.products.index') }}?filter=low_stock" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-boxes me-1"></i>
+                                                Gérer les stocks
+                                            </a>
+                                        </div>
                                     @else
                                         <div class="text-center py-3">
                                             <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
                                             <p class="text-muted mb-0">Tous les stocks sont OK</p>
+                                            <small class="text-muted">Aucun produit en rupture</small>
                                         </div>
                                     @endif
+                                </div>
+                            </div>
+
+                            <!-- Actions rapides -->
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-bolt text-primary me-2"></i>
+                                        Actions rapides
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ route('admin.products.create') }}" class="btn btn-success btn-sm">
+                                            <i class="fas fa-plus me-1"></i>
+                                            Ajouter un produit
+                                        </a>
+                                        <a href="{{ route('admin.categories.create') }}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-tag me-1"></i>
+                                            Nouvelle catégorie
+                                        </a>
+                                        <a href="{{ route('admin.orders.index') }}?status=pending" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Commandes en attente
+                                        </a>
+                                        <a href="{{ route('admin.reports.index') }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-chart-bar me-1"></i>
+                                            Rapports
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -304,5 +411,34 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Empêcher la propagation du clic sur les boutons d'action
+        document.querySelectorAll('.btn-group .btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+
+        // Animation au survol des cartes statistiques
+        document.querySelectorAll('.stats-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Notifications de succès (si vous avez des messages flash)
+        @if(session('success'))
+            // Vous pouvez ajouter ici une notification toast
+            console.log('Succès: {{ session("success") }}');
+        @endif
+
+        @if(session('error'))
+            console.log('Erreur: {{ session("error") }}');
+        @endif
+    </script>
 </body>
 </html>

@@ -23,6 +23,17 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Authentification Laravel
 Auth::routes();
 
+// Route de redirection après login
+Route::get('/home', function() {
+    if (auth()->check()) {
+        if (auth()->user()->is_admin ?? false) {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('customer.dashboard');
+    }
+    return redirect('/');
+})->name('login.redirect');
+
 //route checkout
 Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
@@ -138,8 +149,13 @@ Route::middleware(['auth'])->prefix('mon-compte')->name('customer.')->group(func
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
     // Dashboard admin
-    Route::get('/', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', function() { return redirect()->route('admin.dashboard'); });
     Route::get('/stats', [App\Http\Controllers\Admin\AdminDashboardController::class, 'stats'])->name('stats');
+    Route::get('/customers', [App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('customers.index');
+    Route::get('/customers/{user}', [App\Http\Controllers\Admin\AdminUserController::class, 'show'])->name('customers.show');
+    Route::get('/reviews', function() { return view('admin.reviews.index', ['reviews' => []]); })->name('reviews.index');
+    Route::get('/reports', function() { return view('admin.reports.index'); })->name('reports.index');
 
     // Gestion des produits
     Route::resource('products', App\Http\Controllers\Admin\AdminProductController::class);
