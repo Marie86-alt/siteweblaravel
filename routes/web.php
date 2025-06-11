@@ -7,7 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ContactController;
-
+use App\Http\Controllers\CostumerController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -95,6 +95,39 @@ Route::prefix('contact')->name('contact.')->group(function () {
     Route::get('/api/availability', [App\Http\Controllers\ContactController::class, 'checkAvailability'])->name('availability');
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| Routes Espace Client
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->prefix('mon-compte')->name('customer.')->group(function () {
+
+    // Dashboard principal
+    Route::get('/', [App\Http\Controllers\CustomerController::class, 'dashboard'])->name('dashboard');
+
+    // Profil
+    Route::get('/profil', [App\Http\Controllers\CustomerController::class, 'profile'])->name('profile');
+    Route::put('/profil', [App\Http\Controllers\CustomerController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/mot-de-passe', [App\Http\Controllers\CustomerController::class, 'changePassword'])->name('password.change');
+
+    // Commandes
+    Route::get('/commandes', [App\Http\Controllers\CustomerController::class, 'orders'])->name('orders');
+    Route::get('/commandes/{order}', [App\Http\Controllers\CustomerController::class, 'orderShow'])->name('orders.show');
+
+    // Adresses
+    Route::get('/adresses', [App\Http\Controllers\CustomerController::class, 'addresses'])->name('addresses');
+    Route::put('/adresses', [App\Http\Controllers\CustomerController::class, 'updateAddresses'])->name('addresses.update');
+
+    // Favoris
+    Route::get('/favoris', [App\Http\Controllers\CustomerController::class, 'favorites'])->name('favorites');
+
+    // Paramètres
+    Route::get('/parametres', [App\Http\Controllers\CustomerController::class, 'settings'])->name('settings');
+    Route::put('/parametres', [App\Http\Controllers\CustomerController::class, 'updateSettings'])->name('settings.update');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Routes Administration
@@ -139,6 +172,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Gestion des utilisateurs
     Route::resource('users', App\Http\Controllers\Admin\AdminUserController::class)->except(['create', 'store']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| routees pour les notifications
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/customer/dashboard/chart-data', [CustomerController::class, 'getChartDataAjax'])->name('customer.dashboard.chart-data');
+Route::post('/customer/notifications/{id}/read', [CustomerController::class, 'markNotificationAsRead'])->name('customer.notifications.read');
+Route::post('/customer/notifications/read-all', [CustomerController::class, 'markAllNotificationsAsRead'])->name('customer.notifications.read-all');
 
 /*
 |--------------------------------------------------------------------------

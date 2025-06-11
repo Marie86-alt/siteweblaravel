@@ -187,7 +187,7 @@ class CheckoutController extends Controller
                 'order_number' => $orderNumber,
                 'status' => 'pending',
                 'subtotal' => $subtotal,
-                'shipping_amount' => $shipping,  // ✅ AJOUTÉ
+                'shipping_amount' => $shipping,
                 'total_amount' => $total,
                 'payment_method' => $validated['payment_method'],
                 'payment_status' => 'pending',
@@ -249,6 +249,8 @@ class CheckoutController extends Controller
 
             DB::commit();
             Log::info('Transaction validée');
+            \App\Http\Controllers\CustomerController::sendOrderConfirmation($order);
+
 
             // Rediriger vers la page de confirmation
             Log::info('Redirection vers checkout.confirmation', ['order_id' => $order->id]);

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -19,10 +18,21 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
         'phone',
         'birth_date',
+        'company',
+        'billing_address',
+        'billing_city',
+        'billing_postal_code',
+        'billing_country',
+        'delivery_address',
+        'delivery_city',
+        'delivery_postal_code',
+        'delivery_country',
         'is_admin',
     ];
 
@@ -51,7 +61,7 @@ class User extends Authenticatable
         ];
     }
 
-     // Relations
+    // Relations existantes
     public function addresses()
     {
         return $this->hasMany(Address::class);
@@ -81,7 +91,7 @@ class User extends Authenticatable
             ->where('is_default', true);
     }
 
-    // Scopes
+    // Scopes existants
     public function scopeAdmins($query)
     {
         return $query->where('is_admin', true);
@@ -92,10 +102,50 @@ class User extends Authenticatable
         return $query->where('is_admin', false);
     }
 
-    // Accesseurs
-    public function getFirstNameAttribute()
+    // Accesseurs améliorés
+    public function getFirstNameAttribute($value)
     {
+        // Si first_name existe en base, l'utiliser
+        if ($value) {
+            return $value;
+        }
+
+        // Sinon, extraire de 'name'
         return explode(' ', $this->name)[0];
+    }
+
+    public function getLastNameAttribute($value)
+    {
+        // Si last_name existe en base, l'utiliser
+        if ($value) {
+            return $value;
+        }
+
+        // Sinon, extraire de 'name'
+        $nameParts = explode(' ', $this->name);
+        return count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : '';
+    }
+
+    public function getFullNameAttribute()
+    {
+        if ($this->first_name && $this->last_name) {
+            return $this->first_name . ' ' . $this->last_name;
+        }
+        return $this->name;
+    }
+
+    public function getInitialsAttribute()
+    {
+        if ($this->first_name && $this->last_name) {
+            return strtoupper(substr($this->first_name, 0, 1) . substr($this->last_name, 0, 1));
+        }
+
+        $nameParts = explode(' ', $this->name);
+        if (count($nameParts) >= 2) {
+            return strtoupper(substr($nameParts[0], 0, 1) . substr($nameParts[1], 0, 1));
+        }
+
+        return strtoupper(substr($this->name, 0, 2));
     }
 
     public function getTotalOrdersAttribute()
@@ -108,5 +158,13 @@ class User extends Authenticatable
         return $this->orders()
             ->whereIn('status', ['confirmed', 'preparing', 'shipped', 'delivered'])
             ->sum('total_amount');
+    }
+
+    /**
+     * Vérifier si l'utilisateur est administrateur
+     */
+    public function isAdmin()
+    {
+        return $this->is_admin;
     }
 }

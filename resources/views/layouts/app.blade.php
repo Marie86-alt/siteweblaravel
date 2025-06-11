@@ -377,15 +377,21 @@
                             </a>
                             <ul class="dropdown-menu">
 
-                                    <li><a class="dropdown-item" href="#">
+                                    <li><a class="dropdown-item" href="{{ route('customer.dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-2"></i> Mon compte
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ route('customer.profile') }}">
                                     <i class="fas fa-user me-2"></i> Mon profil
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="#">
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ route('customer.orders') }}">
                                     <i class="fas fa-shopping-bag me-2"></i> Mes commandes
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="#">
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ route('customer.addresses') }}">
                                     <i class="fas fa-map-marker-alt me-2"></i> Mes adresses
-                                    </a></li>
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ route('customer.favorites') }}">
+                                    <i class="fas fa-heart me-2"></i> Mes favoris
+                                </a></li>
                 @if(Auth::user()->is_admin)
         <li><hr class="dropdown-divider"></li>
         <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">
