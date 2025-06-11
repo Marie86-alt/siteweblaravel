@@ -120,7 +120,7 @@ class CheckoutController extends Controller
             'delivery_postal_code' => 'required_if:delivery_same_as_billing,false|string|max:10|nullable',
             'delivery_country' => 'required_if:delivery_same_as_billing,false|string|max:255|nullable',
             'notes' => 'nullable|string|max:1000',
-            'payment_method' => 'required|in:card,transfer,cash',
+            'payment_method' => 'required|in:card,transfer,cash,stripe',
         ]);
         Log::info('Validation réussie', $validated);
 
@@ -249,6 +249,11 @@ class CheckoutController extends Controller
 
             DB::commit();
             Log::info('Transaction validée');
+             if ($request->payment_method === 'stripe') {
+            // Rediriger vers la page de paiement Stripe
+            return redirect()->route('payment.show', $order)
+                           ->with('success', 'Commande créée ! Procédez au paiement.');
+        } else {
             \App\Http\Controllers\CustomerController::sendOrderConfirmation($order);
 
 
@@ -256,7 +261,7 @@ class CheckoutController extends Controller
             Log::info('Redirection vers checkout.confirmation', ['order_id' => $order->id]);
             return redirect()->route('checkout.confirmation', $order->id)
                 ->with('success', 'Votre commande a été créée avec succès !');
-
+        }
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Erreur dans CheckoutController::store', [

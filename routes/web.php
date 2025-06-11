@@ -8,6 +8,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CostumerController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -182,6 +183,28 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 Route::get('/customer/dashboard/chart-data', [CustomerController::class, 'getChartDataAjax'])->name('customer.dashboard.chart-data');
 Route::post('/customer/notifications/{id}/read', [CustomerController::class, 'markNotificationAsRead'])->name('customer.notifications.read');
 Route::post('/customer/notifications/read-all', [CustomerController::class, 'markAllNotificationsAsRead'])->name('customer.notifications.read-all');
+
+
+/*
+|--------------------------------------------------------------------------
+| Routes Paiement Stripe
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->prefix('payment')->name('payment.')->group(function () {
+    // Page de paiement
+    Route::get('/{order}', [PaymentController::class, 'show'])->name('show');
+
+    // Traitement du paiement
+    Route::post('/{order}/process', [PaymentController::class, 'process'])->name('process');
+
+    // Pages de résultat
+    Route::get('/{order}/success', [PaymentController::class, 'success'])->name('success');
+    Route::get('/{order}/cancel', [PaymentController::class, 'cancel'])->name('cancel');
+});
+
+// Webhook Stripe (sans middleware auth)
+Route::post('/stripe/webhook', [PaymentController::class, 'webhook'])->name('stripe.webhook');
 
 /*
 |--------------------------------------------------------------------------

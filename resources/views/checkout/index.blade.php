@@ -142,22 +142,68 @@
         color: white;
     }
 
+    .btn-place-order.stripe-mode {
+        background: linear-gradient(135deg, #635bff, #4f46e5);
+    }
+
+    .btn-place-order.stripe-mode:hover {
+        box-shadow: 0 8px 25px rgba(99, 91, 255, 0.3);
+    }
+
     .payment-method {
         border: 2px solid #e9ecef;
-        border-radius: 10px;
-        padding: 15px;
+        border-radius: 12px;
+        padding: 20px;
         margin-bottom: 15px;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.3s ease;
+        background: white;
     }
 
     .payment-method:hover {
-        border-color: var(--primary-green);
+        border-color: #28a745;
+        box-shadow: 0 2px 10px rgba(40, 167, 69, 0.1);
     }
 
     .payment-method.selected {
-        border-color: var(--primary-green);
-        background: rgba(39, 174, 96, 0.1);
+        border-color: #28a745;
+        background: rgba(40, 167, 69, 0.05);
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+    }
+
+    .payment-method input[type="radio"] {
+        transform: scale(1.2);
+        accent-color: #28a745;
+    }
+
+    .card-brands img {
+        opacity: 0.8;
+        transition: opacity 0.3s ease;
+    }
+
+    .payment-method.selected .card-brands img {
+        opacity: 1;
+    }
+
+    .stripe-info {
+        background: rgba(0, 123, 255, 0.05);
+        border-left: 3px solid #007bff;
+        padding: 10px 15px;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .payment-additional-info {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .payment-additional-info.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .checkbox-custom {
@@ -174,6 +220,27 @@
         padding: 15px;
         margin-top: 15px;
         text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .step-indicator {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .step {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .order-summary {
+            position: static;
+            margin-top: 2rem;
+        }
+
+        .form-section {
+            padding: 20px;
+        }
     }
 </style>
 @endpush
@@ -268,7 +335,7 @@
                             <label for="billing_address" class="form-label">Adresse *</label>
                             <input type="text" class="form-control @error('billing_address') is-invalid @enderror"
                                    id="billing_address" name="billing_address"
-                                   value="{{ old('billing_address') }}" required>
+                                   value="{{ old('billing_address', $user->billing_address) }}" required>
                             @error('billing_address')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -280,7 +347,7 @@
                                     <label for="billing_city" class="form-label">Ville *</label>
                                     <input type="text" class="form-control @error('billing_city') is-invalid @enderror"
                                            id="billing_city" name="billing_city"
-                                           value="{{ old('billing_city') }}" required>
+                                           value="{{ old('billing_city', $user->billing_city) }}" required>
                                     @error('billing_city')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -291,7 +358,7 @@
                                     <label for="billing_postal_code" class="form-label">Code postal *</label>
                                     <input type="text" class="form-control @error('billing_postal_code') is-invalid @enderror"
                                            id="billing_postal_code" name="billing_postal_code"
-                                           value="{{ old('billing_postal_code') }}" required>
+                                           value="{{ old('billing_postal_code', $user->billing_postal_code) }}" required>
                                     @error('billing_postal_code')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -302,9 +369,9 @@
                                     <label for="billing_country" class="form-label">Pays *</label>
                                     <select class="form-control @error('billing_country') is-invalid @enderror"
                                             id="billing_country" name="billing_country" required>
-                                        <option value="France" {{ old('billing_country') == 'France' ? 'selected' : '' }}>France</option>
-                                        <option value="Belgique" {{ old('billing_country') == 'Belgique' ? 'selected' : '' }}>Belgique</option>
-                                        <option value="Suisse" {{ old('billing_country') == 'Suisse' ? 'selected' : '' }}>Suisse</option>
+                                        <option value="France" {{ old('billing_country', $user->billing_country ?? 'France') == 'France' ? 'selected' : '' }}>France</option>
+                                        <option value="Belgique" {{ old('billing_country', $user->billing_country) == 'Belgique' ? 'selected' : '' }}>Belgique</option>
+                                        <option value="Suisse" {{ old('billing_country', $user->billing_country) == 'Suisse' ? 'selected' : '' }}>Suisse</option>
                                     </select>
                                     @error('billing_country')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -391,7 +458,7 @@
                                         <label for="delivery_country" class="form-label">Pays</label>
                                         <select class="form-control @error('delivery_country') is-invalid @enderror"
                                                 id="delivery_country" name="delivery_country">
-                                            <option value="France" {{ old('delivery_country') == 'France' ? 'selected' : '' }}>France</option>
+                                            <option value="France" {{ old('delivery_country', 'France') == 'France' ? 'selected' : '' }}>France</option>
                                             <option value="Belgique" {{ old('delivery_country') == 'Belgique' ? 'selected' : '' }}>Belgique</option>
                                             <option value="Suisse" {{ old('delivery_country') == 'Suisse' ? 'selected' : '' }}>Suisse</option>
                                         </select>
@@ -400,6 +467,12 @@
                                         @enderror
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <button type="button" id="copy-address-btn" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-copy me-1"></i>Copier l'adresse de facturation
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -411,36 +484,54 @@
                             Méthode de paiement
                         </h3>
 
-                        <div class="payment-method" data-method="card">
+                        {{-- Option Stripe (Carte bancaire) --}}
+                        <div class="payment-method" data-method="stripe">
                             <div class="d-flex align-items-center">
-                                <input type="radio" id="payment_card" name="payment_method" value="card"
-                                       {{ old('payment_method', 'card') == 'card' ? 'checked' : '' }}>
-                                <label for="payment_card" class="ms-3 flex-grow-1">
-                                    <i class="fas fa-credit-card me-2"></i>
-                                    <strong>Carte bancaire</strong>
-                                    <br><small class="text-muted">Paiement sécurisé par carte</small>
+                                <input type="radio" id="payment_stripe" name="payment_method" value="stripe"
+                                       {{ old('payment_method', 'stripe') == 'stripe' ? 'checked' : '' }}>
+                                <label for="payment_stripe" class="ms-3 flex-grow-1">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <i class="fab fa-cc-stripe me-2 text-primary" style="font-size: 1.2rem;"></i>
+                                            <strong>Carte bancaire</strong>
+                                            <br><small class="text-muted">Paiement sécurisé par Stripe</small>
+                                        </div>
+                                        <div class="card-brands">
+                                            <img src="https://js.stripe.com/v3/fingerprinted/img/visa-729c05c240c4.svg" alt="Visa" height="20" style="margin-right: 5px;">
+                                            <img src="https://js.stripe.com/v3/fingerprinted/img/mastercard-4d8844094130.svg" alt="Mastercard" height="20" style="margin-right: 5px;">
+                                            <img src="https://js.stripe.com/v3/fingerprinted/img/amex-a49b82f46c5c.svg" alt="Amex" height="20">
+                                        </div>
+                                    </div>
                                 </label>
+                            </div>
+                            <div class="stripe-info mt-2" style="padding-left: 2rem;">
+                                <small class="text-success">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    Paiement 100% sécurisé • Vos données bancaires ne sont jamais stockées
+                                </small>
                             </div>
                         </div>
 
+                        {{-- Option Virement --}}
                         <div class="payment-method" data-method="transfer">
                             <div class="d-flex align-items-center">
                                 <input type="radio" id="payment_transfer" name="payment_method" value="transfer"
                                        {{ old('payment_method') == 'transfer' ? 'checked' : '' }}>
                                 <label for="payment_transfer" class="ms-3 flex-grow-1">
-                                    <i class="fas fa-university me-2"></i>
+                                    <i class="fas fa-university me-2 text-info"></i>
                                     <strong>Virement bancaire</strong>
-                                    <br><small class="text-muted">Paiement par virement (3-5 jours)</small>
+                                    <br><small class="text-muted">Paiement par virement (3-5 jours ouvrés)</small>
                                 </label>
                             </div>
                         </div>
 
+                        {{-- Option Paiement à la livraison --}}
                         <div class="payment-method" data-method="cash">
                             <div class="d-flex align-items-center">
                                 <input type="radio" id="payment_cash" name="payment_method" value="cash"
                                        {{ old('payment_method') == 'cash' ? 'checked' : '' }}>
                                 <label for="payment_cash" class="ms-3 flex-grow-1">
-                                    <i class="fas fa-money-bill-wave me-2"></i>
+                                    <i class="fas fa-money-bill-wave me-2 text-warning"></i>
                                     <strong>Paiement à la livraison</strong>
                                     <br><small class="text-muted">Espèces ou chèque à la réception</small>
                                 </label>
@@ -450,19 +541,64 @@
                         @error('payment_method')
                             <div class="text-danger mt-2">{{ $message }}</div>
                         @enderror
+
+                        {{-- Info supplémentaire selon le mode sélectionné --}}
+                        <div id="payment-info" class="mt-3" style="display: none;">
+                            <div id="stripe-info" class="payment-additional-info">
+                                <div class="alert alert-info d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <div>
+                                        <strong>Paiement par carte :</strong><br>
+                                        Vous serez redirigé vers notre page de paiement sécurisée pour saisir vos informations bancaires.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="transfer-info" class="payment-additional-info">
+                                <div class="alert alert-warning d-flex align-items-center">
+                                    <i class="fas fa-clock me-2"></i>
+                                    <div>
+                                        <strong>Virement bancaire :</strong><br>
+                                        Vos coordonnées bancaires vous seront envoyées par email après validation de la commande.
+                                        <br><small>Délai de traitement : 3-5 jours ouvrés après réception du virement.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="cash-info" class="payment-additional-info">
+                                <div class="alert alert-success d-flex align-items-center">
+                                    <i class="fas fa-truck me-2"></i>
+                                    <div>
+                                        <strong>Paiement à la livraison :</strong><br>
+                                        Réglez directement au livreur en espèces ou par chèque.
+                                        <br><small>Préparez l'appoint si possible pour faciliter la livraison.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Notes additionnelles -->
                     <div class="form-section">
                         <h3 class="section-title">
                             <i class="fas fa-sticky-note"></i>
-                            Notes de commande (optionnel)
+                            Instructions de livraison (optionnel)
                         </h3>
 
                         <div class="form-group">
+                            <textarea class="form-control @error('delivery_instructions') is-invalid @enderror"
+                                      id="delivery_instructions" name="delivery_instructions" rows="3"
+                                      placeholder="Code d'accès, digicode, étage, instructions spéciales...">{{ old('delivery_instructions') }}</textarea>
+                            @error('delivery_instructions')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes" class="form-label">Notes de commande</label>
                             <textarea class="form-control @error('notes') is-invalid @enderror"
-                                      id="notes" name="notes" rows="4"
-                                      placeholder="Instructions de livraison, commentaires...">{{ old('notes') }}</textarea>
+                                      id="notes" name="notes" rows="3"
+                                      placeholder="Commentaires additionnels...">{{ old('notes') }}</textarea>
                             @error('notes')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -529,8 +665,8 @@
 
                         <!-- Bouton de commande -->
                         <button type="submit" class="btn-place-order" id="place-order-btn">
-                            <i class="fas fa-lock me-2"></i>
-                            Finaliser la commande
+                            <i class="fas fa-credit-card me-2"></i>
+                            Payer par carte sécurisée
                         </button>
 
                         <!-- Info livraison -->
@@ -559,96 +695,256 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Gestion de l'adresse de livraison
-        const deliverySameCheckbox = document.getElementById('delivery_same_as_billing');
-        const deliveryFields = document.getElementById('delivery-fields');
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion de l'adresse de livraison
+    const deliverySameCheckbox = document.getElementById('delivery_same_as_billing');
+    const deliveryFields = document.getElementById('delivery-fields');
+    const copyAddressBtn = document.getElementById('copy-address-btn');
 
-        deliverySameCheckbox.addEventListener('change', function() {
-            if (this.checked) {
-                deliveryFields.style.display = 'none';
-                // Vider les champs de livraison
-                deliveryFields.querySelectorAll('input, select').forEach(field => {
-                    field.value = '';
-                    field.removeAttribute('required');
-                });
-            } else {
-                deliveryFields.style.display = 'block';
-                // Rendre les champs obligatoires
-                deliveryFields.querySelectorAll('input[name^="delivery_"], select[name^="delivery_"]').forEach(field => {
-                    if (!field.name.includes('country')) {
-                        field.setAttribute('required', 'required');
-                    }
-                });
+    deliverySameCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            deliveryFields.style.display = 'none';
+            // Vider les champs de livraison
+            deliveryFields.querySelectorAll('input, select').forEach(field => {
+                field.value = '';
+                field.removeAttribute('required');
+            });
+        } else {
+            deliveryFields.style.display = 'block';
+            // Rendre les champs obligatoires
+            deliveryFields.querySelectorAll('input[name^="delivery_"], select[name^="delivery_"]').forEach(field => {
+                if (!field.name.includes('country')) {
+                    field.setAttribute('required', 'required');
+                }
+            });
+        }
+    });
+
+    // Copier l'adresse de facturation vers livraison
+    copyAddressBtn.addEventListener('click', function() {
+        if (deliverySameCheckbox.checked) {
+            return; // Ne pas copier si les champs sont cachés
+        }
+
+        const billingFields = {
+            'billing_first_name': 'delivery_first_name',
+            'billing_last_name': 'delivery_last_name',
+            'billing_address': 'delivery_address',
+            'billing_city': 'delivery_city',
+            'billing_postal_code': 'delivery_postal_code',
+            'billing_country': 'delivery_country'
+        };
+
+        Object.entries(billingFields).forEach(([billing, delivery]) => {
+            const billingField = document.getElementById(billing);
+            const deliveryField = document.getElementById(delivery);
+            if (billingField && deliveryField) {
+                deliveryField.value = billingField.value;
             }
         });
 
-        // Gestion des méthodes de paiement
-        const paymentMethods = document.querySelectorAll('.payment-method');
-        const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+        // Animation de confirmation
+        copyAddressBtn.innerHTML = '<i class="fas fa-check me-1"></i>Adresse copiée !';
+        copyAddressBtn.classList.add('btn-success');
+        copyAddressBtn.classList.remove('btn-outline-secondary');
 
-        paymentMethods.forEach(method => {
-            method.addEventListener('click', function() {
-                const radio = this.querySelector('input[type="radio"]');
+        setTimeout(() => {
+            copyAddressBtn.innerHTML = '<i class="fas fa-copy me-1"></i>Copier l\'adresse de facturation';
+            copyAddressBtn.classList.remove('btn-success');
+            copyAddressBtn.classList.add('btn-outline-secondary');
+        }, 2000);
+    });
+
+    // Gestion des méthodes de paiement avec infos
+    const paymentMethods = document.querySelectorAll('.payment-method');
+    const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+    const paymentInfo = document.getElementById('payment-info');
+    const submitBtn = document.getElementById('place-order-btn');
+
+    function updatePaymentInfo(method) {
+        // Masquer toutes les infos
+        document.querySelectorAll('.payment-additional-info').forEach(info => {
+            info.classList.remove('active');
+        });
+
+        // Afficher l'info correspondante
+        const targetInfo = document.getElementById(method + '-info');
+        if (targetInfo) {
+            paymentInfo.style.display = 'block';
+            targetInfo.classList.add('active');
+        } else {
+            paymentInfo.style.display = 'none';
+        }
+
+        // Changer le style du bouton selon la méthode
+        submitBtn.className = 'btn-place-order';
+        if (method === 'stripe') {
+            submitBtn.classList.add('stripe-mode');
+            submitBtn.innerHTML = '<i class="fas fa-credit-card me-2"></i>Payer par carte sécurisée';
+        } else if (method === 'transfer') {
+            submitBtn.innerHTML = '<i class="fas fa-university me-2"></i>Confirmer la commande (virement)';
+        } else if (method === 'cash') {
+            submitBtn.innerHTML = '<i class="fas fa-money-bill-wave me-2"></i>Commander (paiement livraison)';
+        } else {
+            submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Finaliser la commande';
+        }
+    }
+
+    // Gestion des clics sur les méthodes de paiement
+    paymentMethods.forEach(method => {
+        method.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
                 radio.checked = true;
 
                 // Retirer la classe selected de tous
                 paymentMethods.forEach(m => m.classList.remove('selected'));
                 // Ajouter à celui cliqué
                 this.classList.add('selected');
-            });
-        });
 
-        // Marquer la méthode sélectionnée au chargement
-        paymentRadios.forEach(radio => {
-            if (radio.checked) {
-                radio.closest('.payment-method').classList.add('selected');
+                // Mettre à jour les infos
+                updatePaymentInfo(radio.value);
             }
         });
+    });
 
-        // Validation du formulaire
-        const form = document.getElementById('checkout-form');
-        const submitBtn = document.getElementById('place-order-btn');
+    // Marquer la méthode sélectionnée au chargement et afficher les infos
+    paymentRadios.forEach(radio => {
+        if (radio.checked) {
+            radio.closest('.payment-method').classList.add('selected');
+            updatePaymentInfo(radio.value);
+        }
+    });
 
-        form.addEventListener('submit', function(e) {
-            submitBtn.disabled = true;
+    // Validation du formulaire
+    const form = document.getElementById('checkout-form');
+    form.addEventListener('submit', function(e) {
+        const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
+
+        // Désactiver le bouton et changer le texte
+        submitBtn.disabled = true;
+
+        if (selectedPayment && selectedPayment.value === 'stripe') {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Redirection vers le paiement...';
+        } else {
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Traitement en cours...';
+        }
+
+        // Validation basique côté client
+        let isValid = true;
+        const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
         });
 
-        // Copier les informations de facturation vers livraison
-        function copyBillingToDelivery() {
-            if (deliverySameCheckbox.checked) {
-                return; // Ne pas copier si les champs sont cachés
-            }
+        // Si l'adresse de livraison est différente, vérifier les champs requis
+        if (!deliverySameCheckbox.checked) {
+            const deliveryRequiredFields = [
+                'delivery_first_name', 'delivery_last_name',
+                'delivery_address', 'delivery_city', 'delivery_postal_code'
+            ];
 
-            const billingFields = {
-                'billing_first_name': 'delivery_first_name',
-                'billing_last_name': 'delivery_last_name',
-                'billing_address': 'delivery_address',
-                'billing_city': 'delivery_city',
-                'billing_postal_code': 'delivery_postal_code',
-                'billing_country': 'delivery_country'
-            };
-
-            Object.entries(billingFields).forEach(([billing, delivery]) => {
-                const billingField = document.getElementById(billing);
-                const deliveryField = document.getElementById(delivery);
-                if (billingField && deliveryField) {
-                    deliveryField.value = billingField.value;
+            deliveryRequiredFields.forEach(fieldName => {
+                const field = document.getElementById(fieldName);
+                if (field && !field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else if (field) {
+                    field.classList.remove('is-invalid');
                 }
             });
         }
 
-        // Bouton pour copier l'adresse
-        const copyAddressBtn = document.createElement('button');
-        copyAddressBtn.type = 'button';
-        copyAddressBtn.className = 'btn btn-outline-secondary btn-sm mt-2';
-        copyAddressBtn.innerHTML = '<i class="fas fa-copy me-1"></i>Copier l\'adresse de facturation';
-        copyAddressBtn.addEventListener('click', copyBillingToDelivery);
+        if (!isValid) {
+            e.preventDefault();
+            submitBtn.disabled = false;
+            updatePaymentInfo(selectedPayment.value);
 
-        if (deliveryFields.querySelector('.row')) {
-            deliveryFields.querySelector('.row').appendChild(copyAddressBtn);
+            // Scroll vers le premier champ invalide
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus();
+            }
         }
     });
+
+    // Auto-complétion intelligente
+    const billingFields = ['first_name', 'last_name', 'email', 'phone'];
+    billingFields.forEach(field => {
+        const billingField = document.getElementById('billing_' + field);
+        if (billingField) {
+            billingField.addEventListener('blur', function() {
+                // Si l'adresse de livraison est visible et le champ correspondant est vide
+                if (!deliverySameCheckbox.checked) {
+                    const deliveryField = document.getElementById('delivery_' + field);
+                    if (deliveryField && !deliveryField.value) {
+                        deliveryField.value = this.value;
+                    }
+                }
+            });
+        }
+    });
+
+    // Validation en temps réel
+    const allInputs = form.querySelectorAll('input, select, textarea');
+    allInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid') && this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+
+    // Formatage automatique du code postal
+    const postalCodeFields = document.querySelectorAll('input[name$="_postal_code"]');
+    postalCodeFields.forEach(field => {
+        field.addEventListener('input', function() {
+            // Supprimer tout ce qui n'est pas un chiffre
+            this.value = this.value.replace(/\D/g, '');
+
+            // Limiter à 5 chiffres pour la France
+            if (this.value.length > 5) {
+                this.value = this.value.substring(0, 5);
+            }
+        });
+    });
+
+    // Formatage automatique du téléphone
+    const phoneField = document.getElementById('billing_phone');
+    if (phoneField) {
+        phoneField.addEventListener('input', function() {
+            // Permettre les chiffres, espaces, points, tirets et plus
+            this.value = this.value.replace(/[^\d\s\.\-\+\(\)]/g, '');
+        });
+    }
+
+    // Animation smooth pour les sections
+    const sections = document.querySelectorAll('.form-section');
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    sections.forEach(section => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(20px)';
+        section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(section);
+    });
+});
 </script>
 @endpush
