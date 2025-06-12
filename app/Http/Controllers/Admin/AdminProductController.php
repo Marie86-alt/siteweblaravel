@@ -63,44 +63,42 @@ class AdminProductController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'short_description' => 'nullable|string|max:500',
-            'price' => 'required|numeric|min:0',
-            'compare_price' => 'nullable|numeric|min:0',
-            'unit' => 'required|string|max:50',
-            'weight' => 'nullable|numeric|min:0',
-            'stock_quantity' => 'required|integer|min:0',
-            'min_stock' => 'required|integer|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'origin' => 'nullable|string|max:255',
-            'harvest_date' => 'nullable|date',
-            'expiry_date' => 'nullable|date|after:harvest_date',
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
 
-        $productData = $request->except('images');
-        $productData['is_bio'] = $request->has('is_bio');
-        $productData['is_featured'] = $request->has('is_featured');
-        $productData['is_active'] = $request->has('is_active');
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'price' => 'required|numeric|min:0',
+        'stock' => 'required|integer|min:0',
+        'unit' => 'nullable|string|max:50',
+        'category_id' => 'required|exists:categories,id',
+        'origin' => 'nullable|string|max:255',
+        'season' => 'nullable|string|max:100',
+        'images' => 'nullable|array',
+        'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+    ]);
 
-        // Upload des images
-        if ($request->hasFile('images')) {
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('products', 'public');
-                $imagePaths[] = basename($path);
-            }
-            $productData['images'] = $imagePaths;
+    $productData = $request->except('images');
+    $productData['slug'] = \Str::slug($request->name);
+    $productData['is_active'] = $request->has('is_active');
+    $productData['is_organic'] = $request->has('is_organic');
+    $productData['is_featured'] = $request->has('is_featured');
+
+    // Upload des images
+    if ($request->hasFile('images')) {
+        $imagePaths = [];
+        foreach ($request->file('images') as $image) {
+            $path = $image->store('products', 'public');
+            $imagePaths[] = $path;
         }
-
-        Product::create($productData);
-
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Produit créé avec succès !');
+        $productData['images'] = $imagePaths;
     }
+
+    Product::create($productData);
+
+    return redirect()->route('admin.products.index')
+        ->with('success', 'Produit créé avec succès !');
+}
+    
 
     public function show(Product $product)
     {

@@ -21,9 +21,9 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Liste des Catégories</h5>
-                        <button class="btn btn-primary">
-                            <i class="fas fa-plus me-1"></i>Nouvelle catégorie
-                        </button>
+                        <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Créer une catégorie
+                        </a>
                     </div>
                     <div class="card-body">
                         @if(isset($categories) && $categories->count() > 0)
@@ -78,9 +78,9 @@
                                 <i class="fas fa-tags fa-3x text-muted mb-3"></i>
                                 <h4>Aucune catégorie trouvée</h4>
                                 <p class="text-muted">Commencez par créer votre première catégorie</p>
-                                <button class="btn btn-primary">
-                                    <i class="fas fa-plus me-1"></i>Créer une catégorie
-                                </button>
+                                <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Nouvelle catégorie
+                                </a>
                             </div>
                         @endif
                     </div>

@@ -30,17 +30,29 @@ class AdminCategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+       $request->validate([
+        'name' => 'required|string|max:255|unique:categories,name',
+        'description' => 'nullable|string',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        'is_active' => 'boolean'
+    ]);
 
-        $validated['slug'] = \Str::slug($validated['name']);
+    $categoryData = $request->except('image');
+    $categoryData['slug'] = \Str::slug($request->name);
+    $categoryData['is_active'] = $request->has('is_active');
 
-        Category::create($validated);
-
-        return redirect()->route('admin.categories.index')->with('success', 'Catégorie créée avec succès !');
+    // Gérer l'image
+    if ($request->hasFile('image')) {
+        $path = $request->file('image')->store('categories', 'public');
+        $categoryData['image'] = $path;
     }
+
+    Category::create($categoryData);
+
+    return redirect()->route('admin.categories.index')
+                   ->with('success', 'Catégorie créée avec succès !');
+}
+
 
     /**
      * Display the specified resource.

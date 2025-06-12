@@ -134,6 +134,22 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: all 0.3s ease;
+    }
+
+    .category-image:hover img {
+        transform: scale(1.05);
+    }
+
+    .category-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        color: #666;
     }
 
     .category-badge {
@@ -146,6 +162,13 @@
         border-radius: 15px;
         font-size: 0.8rem;
         font-weight: 600;
+        z-index: 2;
+    }
+
+    .category-badge.ai-badge {
+        left: 15px;
+        right: auto;
+        background: #9b59b6;
     }
 
     .category-content {
@@ -386,7 +409,7 @@
     <div class="stats-bar">
         <div class="stats-grid">
             <div class="stat-item">
-                <div class="stat-number">8</div>
+                <div class="stat-number">{{ isset($categories) ? $categories->count() : 8 }}</div>
                 <div class="stat-label">Catégories</div>
             </div>
             <div class="stat-item">
@@ -437,29 +460,43 @@
                     <div class="category-card fade-in-up">
                         <div class="category-image">
                             @if($category->image)
-                                <img src="{{ asset('storage/categories/' . $category->image) }}"
-                                     alt="{{ $category->name }}">
+                                <img src="{{ asset('storage/' . $category->image) }}"
+                                     alt="{{ $category->name }}"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="category-placeholder" style="display: none;">
+                                    📂
+                                </div>
                             @else
-                                @switch($category->name)
-                                    @case('Fruits')
-                                    @case('Fruits rouges')
-                                    @case('Agrumes')
-                                        🍎
-                                        @break
-                                    @case('Légumes')
-                                    @case('Légumes verts')
-                                    @case('Légumes racines')
-                                        🥕
-                                        @break
-                                    @case('Herbes aromatiques')
-                                        🌿
-                                        @break
-                                    @default
-                                        🥗
-                                @endswitch
+                                <div class="category-placeholder">
+                                    @switch($category->name)
+                                        @case('Fruits')
+                                        @case('Fruits rouges')
+                                        @case('Agrumes')
+                                            🍎
+                                            @break
+                                        @case('Légumes')
+                                        @case('Légumes verts')
+                                        @case('Légumes racines')
+                                            🥕
+                                            @break
+                                        @case('Herbes aromatiques')
+                                            🌿
+                                            @break
+                                        @case('Produits bio')
+                                            🥗
+                                            @break
+                                        @default
+                                            📂
+                                    @endswitch
+                                </div>
                             @endif
-                            @if($category->is_featured)
+                            @if($category->is_featured ?? false)
                                 <span class="category-badge">Populaire</span>
+                            @endif
+                            @if($category->ai_generated ?? false)
+                                <span class="category-badge ai-badge">
+                                    <i class="fas fa-robot"></i> IA
+                                </span>
                             @endif
                         </div>
                         <div class="category-content">
@@ -482,7 +519,7 @@
                 <!-- Catégories exemples -->
                 <div class="category-card fade-in-up">
                     <div class="category-image">
-                        🍎
+                        <div class="category-placeholder">🍎</div>
                         <span class="category-badge">Populaire</span>
                     </div>
                     <div class="category-content">
@@ -500,7 +537,7 @@
 
                 <div class="category-card fade-in-up">
                     <div class="category-image">
-                        🥕
+                        <div class="category-placeholder">🥕</div>
                         <span class="category-badge">Bio</span>
                     </div>
                     <div class="category-content">
@@ -518,7 +555,7 @@
 
                 <div class="category-card fade-in-up">
                     <div class="category-image">
-                        🌿
+                        <div class="category-placeholder">🌿</div>
                     </div>
                     <div class="category-content">
                         <h3 class="category-name">Herbes Aromatiques</h3>
@@ -535,7 +572,7 @@
 
                 <div class="category-card fade-in-up">
                     <div class="category-image">
-                        🥬
+                        <div class="category-placeholder">🥬</div>
                     </div>
                     <div class="category-content">
                         <h3 class="category-name">Salades & Verdures</h3>
@@ -552,7 +589,7 @@
 
                 <div class="category-card fade-in-up">
                     <div class="category-image">
-                        🍓
+                        <div class="category-placeholder">🍓</div>
                         <span class="category-badge">Saisonnier</span>
                     </div>
                     <div class="category-content">
@@ -570,7 +607,7 @@
 
                 <div class="category-card fade-in-up">
                     <div class="category-image">
-                        🥥
+                        <div class="category-placeholder">🥥</div>
                     </div>
                     <div class="category-content">
                         <h3 class="category-name">Fruits Exotiques</h3>

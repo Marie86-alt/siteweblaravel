@@ -12,11 +12,20 @@ class Category extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'description', 'image', 'is_active', 'sort_order'
+        'name',
+        'slug', 'description',
+        'image',
+        'is_active',
+        'sort_order',
+        'ai_generated',
+        'ai_prompt',
+        'image_generated_at',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
+        'ai_generated' => 'boolean',
+        'image_generated_at' => 'datetime',
     ];
 
     // Mutateur pour générer automatiquement le slug

@@ -1,15 +1,25 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+
+// Controllers Frontend
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ContactController;
-use App\Http\Controllers\CostumerController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PaymentController;
-use Illuminate\Support\Facades\Auth;
+
+// Controllers Admin
+use App\Http\Controllers\Admin\AdminProductController;
+use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\ImageGenerationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,21 +44,13 @@ Route::get('/home', function() {
     return redirect('/');
 })->name('login.redirect');
 
-//route checkout
-Route::middleware(['auth'])->group(function () {
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
-});
-
-
 /*
 |--------------------------------------------------------------------------
 | Routes Frontend
 |--------------------------------------------------------------------------
 */
 
-// Produits (routes réelles)
+// Produits
 Route::prefix('produits')->name('products.')->group(function () {
     Route::get('/', [ProductController::class, 'index'])->name('index');
     Route::get('/vedettes', [ProductController::class, 'featured'])->name('featured');
@@ -56,23 +58,17 @@ Route::prefix('produits')->name('products.')->group(function () {
     Route::get('/{product:slug}', [ProductController::class, 'show'])->name('show');
 });
 
-
-/*
-|--------------------------------------------------------------------------
-| Routes Catégories
-|--------------------------------------------------------------------------
-*/
-
+// Catégories
 Route::prefix('categories')->name('categories.')->group(function () {
-    Route::get('/', [App\Http\Controllers\CategoryController::class, 'index'])->name('index');
-    Route::get('/{category:slug}', [App\Http\Controllers\CategoryController::class, 'show'])->name('show');
+    Route::get('/', [CategoryController::class, 'index'])->name('index');
+    Route::get('/{category:slug}', [CategoryController::class, 'show'])->name('show');
 
     // Routes AJAX
-    Route::get('/api/filter', [App\Http\Controllers\CategoryController::class, 'filter'])->name('filter');
-    Route::get('/api/search', [App\Http\Controllers\CategoryController::class, 'search'])->name('search');
+    Route::get('/api/filter', [CategoryController::class, 'filter'])->name('filter');
+    Route::get('/api/search', [CategoryController::class, 'search'])->name('search');
 });
 
-// Panier reelles
+// Panier
 Route::prefix('panier')->name('cart.')->group(function () {
     Route::get('/', [CartController::class, 'index'])->name('index');
     Route::post('/ajouter/{product}', [CartController::class, 'add'])->name('add');
@@ -80,6 +76,23 @@ Route::prefix('panier')->name('cart.')->group(function () {
     Route::delete('/supprimer/{productId}', [CartController::class, 'remove'])->name('remove');
     Route::delete('/vider', [CartController::class, 'clear'])->name('clear');
 });
+
+// Checkout
+Route::middleware(['auth'])->group(function () {
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
+});
+
+// Contact
+Route::prefix('contact')->name('contact.')->group(function () {
+    Route::get('/', [ContactController::class, 'index'])->name('index');
+    Route::post('/', [ContactController::class, 'store'])->name('store');
+
+    // Route AJAX
+    Route::get('/api/availability', [ContactController::class, 'checkAvailability'])->name('availability');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Routes API
@@ -92,22 +105,6 @@ Route::get('/api/cart/count', function() {
     return response()->json(['count' => $count]);
 })->name('api.cart.count');
 
-
-/*
-|--------------------------------------------------------------------------
-| Routes Contact
-|--------------------------------------------------------------------------
-*/
-
-Route::prefix('contact')->name('contact.')->group(function () {
-    Route::get('/', [App\Http\Controllers\ContactController::class, 'index'])->name('index');
-    Route::post('/', [App\Http\Controllers\ContactController::class, 'store'])->name('store');
-
-    // Route AJAX
-    Route::get('/api/availability', [App\Http\Controllers\ContactController::class, 'checkAvailability'])->name('availability');
-});
-
-
 /*
 |--------------------------------------------------------------------------
 | Routes Espace Client
@@ -115,29 +112,35 @@ Route::prefix('contact')->name('contact.')->group(function () {
 */
 
 Route::middleware(['auth'])->prefix('mon-compte')->name('customer.')->group(function () {
-
     // Dashboard principal
-    Route::get('/', [App\Http\Controllers\CustomerController::class, 'dashboard'])->name('dashboard');
+    Route::get('/', [CustomerController::class, 'dashboard'])->name('dashboard');
 
     // Profil
-    Route::get('/profil', [App\Http\Controllers\CustomerController::class, 'profile'])->name('profile');
-    Route::put('/profil', [App\Http\Controllers\CustomerController::class, 'updateProfile'])->name('profile.update');
-    Route::put('/mot-de-passe', [App\Http\Controllers\CustomerController::class, 'changePassword'])->name('password.change');
+    Route::get('/profil', [CustomerController::class, 'profile'])->name('profile');
+    Route::put('/profil', [CustomerController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/mot-de-passe', [CustomerController::class, 'changePassword'])->name('password.change');
 
     // Commandes
-    Route::get('/commandes', [App\Http\Controllers\CustomerController::class, 'orders'])->name('orders');
-    Route::get('/commandes/{order}', [App\Http\Controllers\CustomerController::class, 'orderShow'])->name('orders.show');
+    Route::get('/commandes', [CustomerController::class, 'orders'])->name('orders');
+    Route::get('/commandes/{order}', [CustomerController::class, 'orderShow'])->name('orders.show');
 
     // Adresses
-    Route::get('/adresses', [App\Http\Controllers\CustomerController::class, 'addresses'])->name('addresses');
-    Route::put('/adresses', [App\Http\Controllers\CustomerController::class, 'updateAddresses'])->name('addresses.update');
+    Route::get('/adresses', [CustomerController::class, 'addresses'])->name('addresses');
+    Route::put('/adresses', [CustomerController::class, 'updateAddresses'])->name('addresses.update');
 
     // Favoris
-    Route::get('/favoris', [App\Http\Controllers\CustomerController::class, 'favorites'])->name('favorites');
+    Route::get('/favoris', [CustomerController::class, 'favorites'])->name('favorites');
 
     // Paramètres
-    Route::get('/parametres', [App\Http\Controllers\CustomerController::class, 'settings'])->name('settings');
-    Route::put('/parametres', [App\Http\Controllers\CustomerController::class, 'updateSettings'])->name('settings.update');
+    Route::get('/parametres', [CustomerController::class, 'settings'])->name('settings');
+    Route::put('/parametres', [CustomerController::class, 'updateSettings'])->name('settings.update');
+});
+
+// Routes AJAX pour notifications client
+Route::middleware(['auth'])->group(function () {
+    Route::get('/customer/dashboard/chart-data', [CustomerController::class, 'getChartDataAjax'])->name('customer.dashboard.chart-data');
+    Route::post('/customer/notifications/{id}/read', [CustomerController::class, 'markNotificationAsRead'])->name('customer.notifications.read');
+    Route::post('/customer/notifications/read-all', [CustomerController::class, 'markAllNotificationsAsRead'])->name('customer.notifications.read-all');
 });
 
 /*
@@ -149,57 +152,62 @@ Route::middleware(['auth'])->prefix('mon-compte')->name('customer.')->group(func
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
     // Dashboard admin
-    Route::get('/dashboard', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/', function() { return redirect()->route('admin.dashboard'); });
-    Route::get('/stats', [App\Http\Controllers\Admin\AdminDashboardController::class, 'stats'])->name('stats');
-    Route::get('/customers', [App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('customers.index');
-    Route::get('/customers/{user}', [App\Http\Controllers\Admin\AdminUserController::class, 'show'])->name('customers.show');
-    Route::get('/reviews', function() { return view('admin.reviews.index', ['reviews' => []]); })->name('reviews.index');
-    Route::get('/reports', function() { return view('admin.reports.index'); })->name('reports.index');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/stats', [AdminDashboardController::class, 'stats'])->name('stats');
 
     // Gestion des produits
-    Route::resource('products', App\Http\Controllers\Admin\AdminProductController::class);
-    Route::patch('products/{product}/toggle-status', [App\Http\Controllers\Admin\AdminProductController::class, 'toggleStatus'])->name('products.toggleStatus');
-    Route::get('products/stock/faible', [App\Http\Controllers\Admin\AdminProductController::class, 'lowStock'])->name('products.lowStock');
-    Route::post('products/bulk-activate', [App\Http\Controllers\Admin\AdminProductController::class, 'bulkActivate'])->name('products.bulkActivate');
-    Route::post('products/bulk-deactivate', [App\Http\Controllers\Admin\AdminProductController::class, 'bulkDeactivate'])->name('products.bulkDeactivate');
-    Route::post('products/bulk-delete', [App\Http\Controllers\Admin\AdminProductController::class, 'bulkDelete'])->name('products.bulkDelete');
-    Route::post('products/stock/update-bulk', [App\Http\Controllers\Admin\AdminProductController::class, 'updateBulkStock'])->name('products.updateBulkStock');
-    Route::get('products/export', [App\Http\Controllers\Admin\AdminProductController::class, 'export'])->name('products.export');
-
-      // Routes pour la génération d'images IA
-    Route::prefix('image-generation')->name('image-generation.')->group(function () {
-        Route::get('/', [App\Http\Controllers\Admin\ImageGenerationController::class, 'index'])
-            ->name('index');
-        Route::post('/generate/{product}', [App\Http\Controllers\Admin\ImageGenerationController::class, 'generateSingle'])
-            ->name('generate-single');
-        Route::post('/regenerate/{product}', [App\Http\Controllers\Admin\ImageGenerationController::class, 'regenerate'])
-            ->name('regenerate');
-        Route::post('/batch', [App\Http\Controllers\Admin\ImageGenerationController::class, 'generateBatch'])
-            ->name('generate-batch');
-    });
+    Route::resource('products', AdminProductController::class);
+    Route::patch('products/{product}/toggle-status', [AdminProductController::class, 'toggleStatus'])->name('products.toggleStatus');
+    Route::patch('products/{product}/toggle', [AdminProductController::class, 'toggle'])->name('products.toggle');
+    Route::post('products/{product}/duplicate', [AdminProductController::class, 'duplicate'])->name('products.duplicate');
+    Route::get('products/stock/faible', [AdminProductController::class, 'lowStock'])->name('products.lowStock');
+    Route::post('products/bulk-activate', [AdminProductController::class, 'bulkActivate'])->name('products.bulkActivate');
+    Route::post('products/bulk-deactivate', [AdminProductController::class, 'bulkDeactivate'])->name('products.bulkDeactivate');
+    Route::post('products/bulk-delete', [AdminProductController::class, 'bulkDelete'])->name('products.bulkDelete');
+    Route::post('products/stock/update-bulk', [AdminProductController::class, 'updateBulkStock'])->name('products.updateBulkStock');
+    Route::get('products/export', [AdminProductController::class, 'export'])->name('products.export');
 
     // Gestion des catégories
-    Route::resource('categories', App\Http\Controllers\Admin\AdminCategoryController::class);
+    Route::resource('categories', AdminCategoryController::class);
+    Route::patch('categories/{category}/toggle', [AdminCategoryController::class, 'toggle'])->name('categories.toggle');
+    Route::post('categories/{category}/generate-image', [AdminCategoryController::class, 'generateImage'])->name('categories.generate-image');
+    Route::delete('categories/{category}/delete-image', [AdminCategoryController::class, 'deleteImage'])->name('categories.delete-image');
 
     // Gestion des commandes
-    Route::resource('orders', App\Http\Controllers\Admin\AdminOrderController::class)->except(['create', 'store']);
-    Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::resource('orders', AdminOrderController::class)->except(['create', 'store']);
+    Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
-    // Gestion des utilisateurs
-    Route::resource('users', App\Http\Controllers\Admin\AdminUserController::class)->except(['create', 'store']);
+    // Gestion des utilisateurs/clients
+    Route::get('/customers', [AdminUserController::class, 'index'])->name('customers.index');
+    Route::get('/customers/{user}', [AdminUserController::class, 'show'])->name('customers.show');
+    Route::resource('users', AdminUserController::class)->except(['create', 'store']);
+
+    // Routes pour la génération d'images IA
+    Route::prefix('image-generation')->name('image-generation.')->group(function () {
+        Route::get('/', [ImageGenerationController::class, 'index'])->name('index');
+
+        // Produits
+        Route::post('/generate/{product}', [ImageGenerationController::class, 'generateSingle'])->name('generate-single');
+        Route::post('/regenerate/{product}', [ImageGenerationController::class, 'regenerate'])->name('regenerate');
+        Route::post('/batch', [ImageGenerationController::class, 'generateBatch'])->name('generate-batch');
+
+        // Catégories
+        Route::post('/generate-category/{category}', [ImageGenerationController::class, 'generateCategorySingle'])->name('generate-category-single');
+        Route::post('/regenerate-category/{category}', [ImageGenerationController::class, 'regenerateCategory'])->name('regenerate-category');
+        Route::post('/batch-categories', [ImageGenerationController::class, 'generateCategoryBatch'])->name('generate-category-batch');
+        Route::delete('/delete-category/{category}', [ImageGenerationController::class, 'deleteCategoryImage'])->name('delete-category-image');
+    });
+
+    // Pages temporaires admin
+    Route::get('/reviews', function() {
+        return view('admin.reviews.index', ['reviews' => []]);
+    })->name('reviews.index');
+
+    Route::get('/reports', function() {
+        return view('admin.reports.index');
+    })->name('reports.index');
 });
-
-/*
-|--------------------------------------------------------------------------
-| routees pour les notifications
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/customer/dashboard/chart-data', [CustomerController::class, 'getChartDataAjax'])->name('customer.dashboard.chart-data');
-Route::post('/customer/notifications/{id}/read', [CustomerController::class, 'markNotificationAsRead'])->name('customer.notifications.read');
-Route::post('/customer/notifications/read-all', [CustomerController::class, 'markAllNotificationsAsRead'])->name('customer.notifications.read-all');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -224,7 +232,7 @@ Route::post('/stripe/webhook', [PaymentController::class, 'webhook'])->name('str
 
 /*
 |--------------------------------------------------------------------------
-| Pages Statiques temporaires
+| Pages Statiques
 |--------------------------------------------------------------------------
 */
 
